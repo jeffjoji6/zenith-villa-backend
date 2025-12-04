@@ -15,7 +15,27 @@ cloudinary.config({
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:8083",
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    // Define allowed origins
+    const allowedOrigins = [
+      "http://localhost:8083", // Local development
+      "http://localhost:3000", // Alternative local port
+      "http://localhost:8080", // Current local frontend port
+      "https://zenithtwilight.in", // Production domain
+      "https://www.zenithtwilight.in", // Production domain with www
+    ];
+
+    // Check if the origin is allowed
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log(`CORS blocked origin: ${origin}`);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
 };
@@ -285,9 +305,7 @@ app.listen(PORT, () => {
     `📸 Cloudinary configured for: ${process.env.CLOUDINARY_CLOUD_NAME}`
   );
   console.log(
-    `🌐 CORS enabled for: ${
-      process.env.FRONTEND_URL || "http://localhost:8083"
-    }`
+    `🌐 CORS enabled for: localhost:8083, localhost:3000, zenithtwilight.in`
   );
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
 });
